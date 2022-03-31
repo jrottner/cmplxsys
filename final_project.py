@@ -17,7 +17,6 @@ class Firefly():
             y_pos = int(np.random.uniform(0,max_y))
         else:
             return
-            # comment
     
     def move(self): 
         return self.x_pos
