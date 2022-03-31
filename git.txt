@@ -1,0 +1,6 @@
+Git Process:
+
+1. Make changes and save locally
+2. add files to be committed
+3. commit changes with -m "message"
+4. push commit to branch wth origin branch_name
