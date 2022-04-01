@@ -7,8 +7,12 @@ max_lum = 100
 max_x = 10
 max_y = 10
 
+fireflies = [] 
+
 class Firefly():
     def __init__(self,location):
+        global fireflies
+
         # if inside jar, location = 0
         # if outside jar, location = 1
         base_lum = np.random.uniform(1,10)
@@ -16,7 +20,9 @@ class Firefly():
             x_pos = int(np.random.uniform(0,max_x))
             y_pos = int(np.random.uniform(0,max_y))
         else:
-            return
+            pass
+        fireflies.append(self)
     
-    def move(self): 
-        return self.x_pos
+    def move(self):
+        return 
+        
