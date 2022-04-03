@@ -73,9 +73,6 @@ def compute_luminousity(grid):
         for row,col in grid:
             grid[row,col] += (fly.base_lum * 1 / ( max( dist((row,col),(fly.row,fly.col)) ,1) ^ 2 ) )
     return grid
-    
-
-
         
 def initialize():
     global x_pad, y_pad, x_jar, y_jar
