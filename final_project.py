@@ -35,7 +35,7 @@ o o . o o o o . o o
 o o . o o o o . o o
 o o . o o o o . o o
 o o . o o o o . o o
-
+o o . . . . . . o o
 *TODO: having trouble with making outside jar spawning position equiprobable, as we can get y positions from 0 to 
 
 """
