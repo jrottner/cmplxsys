@@ -77,3 +77,5 @@ def compute_luminousity(grid):
 def initialize():
     global x_pad, y_pad, x_jar, y_jar
     grid = np.zeros((1 + y_pad + y_jar,2 + 2*x_pad + x_jar))
+
+    # example comment
