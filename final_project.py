@@ -40,7 +40,6 @@ o o . o o o o . o o
 o o . . . . . . o o
 
 """
-# TODO: Terniary statment here
 def is_boundary(row,col):
     global x_pad, y_pad, x_jar, y_jar
     return True if (((col == x_pad) or (col == (x_pad + x_jar + 1))) or ((row == y_pad) or (row == (y_pad + y_jar + 1)))) else False
@@ -54,11 +53,11 @@ lum_grid = []
 
 class Firefly():
     def __init__(self,flag):
-        global fireflies, x_pad, y_pad, x_jar, y_jar
+        global fireflies, x_pad, y_pad, x_jar, y_jar, max_lum
 
         # if inside jar, flag = 0
         # if outside jar, flag = 1
-        self.base_lum = np.random.uniform(1,10)
+        self.base_lum = np.random.uniform(1,max_lum)
         if (flag == 0):
             self.row = int(np.random.uniform(y_pad + 1,1 + y_pad + y_jar))
             self.col = int(np.random.uniform(x_pad + 1,x_pad + x_jar + 1))
@@ -124,8 +123,8 @@ class Firefly():
 def dist(pos1,pos2):
     return ((pos1[0] - pos2[0])^2 + (pos1[1] - pos2[1])^2)^0.5
 
-# TODO compute luminousity from all fireflies.
-def compute_luminousity(grid):
+# TODO compute luminosity from all fireflies.
+def compute_luminosity(grid):
     global fireflies
     for fly in fireflies:
         for row,col in grid:
