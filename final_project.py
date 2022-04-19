@@ -273,7 +273,7 @@ def get_eq(arr):
             return i 
     return N-1
 
-def plot_all():
+def plot_avg_plots():
     plt.cla()
     global params, fly_out_avg_arr, equil_arr
     plt.scatter(params[:,0],fly_out_avg_arr)
@@ -347,8 +347,46 @@ def plot_all():
     plt.xlabel("num_outjar")
     plt.show()
 
+def plot_lum_plots():
+    plt.cla()
+    global params, peak_lum_arr
+    plt.scatter(params[:,0],peak_lum_arr)
+    plt.title("Peak Luminosity vs. x_jar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("x_jar")
+    plt.figure()
+    plt.scatter(params[:,1],peak_lum_arr)
+    plt.title("Peak Luminosity vs. y_jar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("y_jar")
+    plt.figure()
+    plt.scatter(params[:,2],peak_lum_arr)
+    plt.title("Peak Luminosity vs. x_pad")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("x_pad")
+    plt.figure()
+    plt.scatter(params[:,3],peak_lum_arr)
+    plt.title("Peak Luminosity vs. y_pad")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("y_pad")
+    plt.figure()
+    plt.scatter(params[:,4],peak_lum_arr)
+    plt.title("Peak Luminosity vs. randomness")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("randomness")
+    plt.figure()
+    plt.scatter(params[:,5],peak_lum_arr)
+    plt.title("Peak Luminosity vs. num_injar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("num_injar")
+    plt.figure()
+    plt.scatter(params[:,6],peak_lum_arr)
+    plt.title("Peak Luminosity vs. num_outjar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("num_outjar")
+    plt.show()
 
-nsamples = 5
+nsamples = 200
 reruns = 2
 nparams = 7
 
@@ -358,6 +396,7 @@ params = npm.repmat(lhs(nparams, samples = nsamples),reruns,1)
 
 fly_out_avg_arr = []
 equil_arr = []
+peak_lum_arr = []
 N = 200
 i = -1
 while i < (np.shape(params)[0] - 1):
@@ -387,16 +426,25 @@ while i < (np.shape(params)[0] - 1):
 
     fly_out_avg_sum = 0
     equil_sum = 0
+    peak_lum = 0
     initialize()
+    lum_grid = np.zeros((2 + y_pad + y_jar,2 + 2*x_pad + x_jar))
+    lum_grid = compute_luminosity(lum_grid)
     fly_out = []
     for j in range(N):
+        
+        temp = np.amax(lum_grid)
+        if peak_lum < temp: peak_lum = temp
         _,b = compute_in()
         fly_out.append(b)
         update()
+        
     fly_out_avg_arr.append(np.mean(fly_out[100:]))   
     equil_arr.append(get_eq(fly_out))
+    peak_lum_arr.append(peak_lum)
 
-plot_all()
+#plot_avg_plots()
+plot_lum_plots()
 
 """
 update()
