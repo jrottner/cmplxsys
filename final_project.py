@@ -4,11 +4,13 @@
 # Joe Rottner (jrottner@umich.edu) and Jason Hu (jashu@umich.edu)
 
 import numpy as np
+import numpy.matlib as npm
 import pycxsimulator
 import matplotlib.pyplot as plt
 from random import random
 import random
 import math
+from pyDOE import lhs
 
 max_lum = 100
 x_jar = 10 # size of jar in X dimension
@@ -219,6 +221,12 @@ def spawn(lum_grid):
     for i in range(max(int(rate),2)):
         Firefly(1)
 
+def get_jarsize():
+    global x_jar, y_jar, x_pad, y_pad 
+    inside = x_jar*y_jar 
+    outside = (2*x_pad+x_jar+2)*(2+y_pad+y_jar) - (x_jar+1)*(y_jar+1)
+    return inside, outside
+
 # Spawns num_injar fireflies inside of the jar and num_outjar fireflies outside of the jar
 def initialize():
     global x_pad, y_pad, x_jar, y_jar, fireflies
@@ -265,29 +273,48 @@ def get_eq(arr):
             return i 
     return N-1
 
-N = 200
-iters = 2
+
+nsamples = 5
+reruns = 2
+nparams = 7
+
+# Set up parameter array
+params = npm.repmat(lhs(nparams, samples = nsamples),reruns,1) 
+# Each row is a new parameter set
+plt.cla()
+
+
 fly_out_avg_arr = []
 equil_arr = []
-outjar_numbers = [5, 10, 15, 20, 25, 30]
-for outjar in outjar_numbers:
-    print("Number in jar: " + str(outjar))
-    num_outjar = outjar
+N = 200
+i = -1
+while i < np.shape(params)[0]:
+    i +=1
+    print(i)
+    x_jar = int(max(params[i,0] * 10,2))
+    y_jar = int(max(params[i,1] * 10,2))
+    x_pad = int(max(params[i,2] * 10, 1))
+    y_pad = int(max(params[i,3] * 10, 1))
+    randomness = params[i,4]
+    num_injar = int(params[i,5]*20)
+    num_outjar = int(params[i,6]*30)
+    
+    r,s = get_jarsize()
+    if num_injar > r or num_outjar > s: 
+        params = np.delete(params, i, 0)
+        i = i-1
+        continue
+
     fly_out_avg_sum = 0
     equil_sum = 0
-    for j in range(iters):
-        print("Simulation: " + str((j+1)))
-        initialize()
-        fly_in = []
-        fly_out = []
-        x_run = [i for i in range(N)]
-        for i in range(N):
-            #print (i+1)
-            _,b = compute_in()
-            #fly_in.append(a)
-            fly_out.append(b)
-            update()
-            if i%(N/2)==0 and (not i == 0): print ("50 percent done")
+    initialize()
+    fly_out = []
+    for i in range(N):
+        #print (i+1)
+        _,b = compute_in()
+        fly_out.append(b)
+        update()
+        if i%(N/2)==0 and (not i == 0): print ("50 percent done")
         #plt.subplot(1,2,1)
         #plt.plot(x_run,fly_in)
         #plt.title("fly in")
@@ -295,17 +322,15 @@ for outjar in outjar_numbers:
         #plot(x_run,fly_out)
         #plt.title("fly out")
         #plt.show()
-        
-        fly_out_avg_sum = fly_out_avg_sum + np.mean(fly_out[100:])
-        equil_sum += get_eq(fly_out)
 
-    fly_out_avg_arr.append(fly_out_avg_sum/iters)   
-    equil_arr.append(equil_sum/iters)
+    fly_out_avg_arr.append(np.mean(fly_out[100:]))   
+    equil_arr.append(get_eq(fly_out))
 
 plt.figure()
-plt.plot(outjar_numbers, fly_out_avg_arr)
+plt.scatter(params[:,0],fly_out_avg_arr)
+plt.title("Fly Out Avg = X_jar")
 plt.figure()
-plt.plot(outjar_numbers, equil_arr)
+plt.plot(params[:,1], equil_arr)
 plt.show()
 """
 update()
