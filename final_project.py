@@ -130,19 +130,6 @@ class Firefly():
 
         return themove
 
-        if len(moves) == 1:
-            pass
-
-        if True:
-            self.row = self.row-1
-        elif "left" in moves:
-            self.col = self.col-1
-        elif "down" in moves:
-            self.row = self.row+1
-        else:
-            self.col = self.col+1
-        return
-
 
     def checkFirefly(self, rowNum, colNum):
         #return a boolean indicating whether there is a firefly on rowNum, colNum
