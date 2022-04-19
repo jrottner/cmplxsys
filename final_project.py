@@ -160,11 +160,11 @@ def spawn(lum_grid):
     end_y = np.shape(lum_grid)[0]
     end_x = np.shape(lum_grid)[1]
 
-    rate = np.amax(lum_grid[y_pad + 1:(end_y - 1),x_pad + 1:(end_x - x_pad - 1)]) / max_lum / 5
+    rate = np.amax(lum_grid[y_pad + 1:(end_y - 1),x_pad + 1:(end_x - x_pad - 1)]) / max_lum
     x = np.random.uniform()
     if x < rate-math.floor(rate):
         Firefly(1)
-    for i in range(int(rate)):
+    for i in range(max(int(rate),2)):
         Firefly(1)
 
 def initialize():
