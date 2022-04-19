@@ -273,6 +273,80 @@ def get_eq(arr):
             return i 
     return N-1
 
+def plot_all():
+    plt.cla()
+    global params, fly_out_avg_arr, equil_arr
+    plt.scatter(params[:,0],fly_out_avg_arr)
+    plt.title("Average Outside Fireflies vs. x_jar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("x_jar")
+    plt.figure()
+    plt.scatter(params[:,0],equil_arr)
+    plt.title("Time to Reach Equilibrium vs x_jar")
+    plt.ylabel("Time to Reach Equilibrium")
+    plt.xlabel("x_jar")
+    plt.figure()
+    plt.scatter(params[:,1],fly_out_avg_arr)
+    plt.title("Average Outside Fireflies vs. y_jar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("y_jar")
+    plt.figure()
+    plt.scatter(params[:,1],equil_arr)
+    plt.title("Time to Reach Equilibrium vs y_jar")
+    plt.ylabel("Time to Reach Equilibrium")
+    plt.xlabel("y_jar")
+    plt.figure()
+    plt.scatter(params[:,2],fly_out_avg_arr)
+    plt.title("Average Outside Fireflies vs. x_pad")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("x_pad")
+    plt.figure()
+    plt.scatter(params[:,2],equil_arr)
+    plt.title("Time to Reach Equilibrium vs x_pad")
+    plt.ylabel("Time to Reach Equilibrium")
+    plt.xlabel("x_pad")
+    plt.figure()
+    plt.scatter(params[:,3],fly_out_avg_arr)
+    plt.title("Average Outside Fireflies vs. y_pad")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("y_pad")
+    plt.figure()
+    plt.scatter(params[:,3],equil_arr)
+    plt.title("Time to Reach Equilibrium vs y_pad")
+    plt.ylabel("Time to Reach Equilibrium")
+    plt.xlabel("y_pad")
+    plt.figure()
+    plt.scatter(params[:,4],fly_out_avg_arr)
+    plt.title("Average Outside Fireflies vs. randomness")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("randomness")
+    plt.figure()
+    plt.scatter(params[:,4],equil_arr)
+    plt.title("Time to Reach Equilibrium vs randomness")
+    plt.ylabel("Time to Reach Equilibrium")
+    plt.xlabel("randomness")
+    plt.figure()
+    plt.scatter(params[:,5],fly_out_avg_arr)
+    plt.title("Average Outside Fireflies vs. num_injar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("num_injar")
+    plt.figure()
+    plt.scatter(params[:,5],equil_arr)
+    plt.title("Time to Reach Equilibrium vs num_injar")
+    plt.ylabel("Time to Reach Equilibrium")
+    plt.xlabel("num_injar")
+    plt.figure()
+    plt.scatter(params[:,6],fly_out_avg_arr)
+    plt.title("Average Outside Fireflies vs. num_outjar")
+    plt.ylabel("Avg Outside Fireflies")
+    plt.xlabel("num_outjar")
+    plt.figure()
+    plt.scatter(params[:,6],equil_arr)
+    plt.title("Time to Reach Equilibrium vs num_outjar")
+    plt.ylabel("Time to Reach Equilibrium")
+    plt.xlabel("num_outjar")
+    plt.show()
+
 
 nsamples = 5
 reruns = 2
@@ -281,57 +355,49 @@ nparams = 7
 # Set up parameter array
 params = npm.repmat(lhs(nparams, samples = nsamples),reruns,1) 
 # Each row is a new parameter set
-plt.cla()
-
 
 fly_out_avg_arr = []
 equil_arr = []
 N = 200
 i = -1
-while i < np.shape(params)[0]:
+while i < (np.shape(params)[0] - 1):
     i +=1
-    print(i)
-    x_jar = int(max(params[i,0] * 10,2))
-    y_jar = int(max(params[i,1] * 10,2))
+    print("Simulation: " + str(i + 1) + " / " + str(np.shape(params)[0]))
+    x_jar = int(max(params[i,0] * 10, 2))
+    y_jar = int(max(params[i,1] * 10, 2))
     x_pad = int(max(params[i,2] * 10, 1))
     y_pad = int(max(params[i,3] * 10, 1))
     randomness = params[i,4]
     num_injar = int(params[i,5]*20)
     num_outjar = int(params[i,6]*30)
     
+    params[i,0] = x_jar
+    params[i,1] = y_jar
+    params[i,2] = x_pad
+    params[i,3] = y_pad
+    params[i,5] = num_injar
+    params[i,6] = num_outjar
+    
     r,s = get_jarsize()
-    if num_injar > r or num_outjar > s: 
+    if num_injar > r or num_outjar > s:
+        print("Deleting row...")
         params = np.delete(params, i, 0)
-        i = i-1
+        i -= 1
         continue
 
     fly_out_avg_sum = 0
     equil_sum = 0
     initialize()
     fly_out = []
-    for i in range(N):
-        #print (i+1)
+    for j in range(N):
         _,b = compute_in()
         fly_out.append(b)
         update()
-        if i%(N/2)==0 and (not i == 0): print ("50 percent done")
-        #plt.subplot(1,2,1)
-        #plt.plot(x_run,fly_in)
-        #plt.title("fly in")
-        #plt.subplot(1,2,2)
-        #plot(x_run,fly_out)
-        #plt.title("fly out")
-        #plt.show()
-
     fly_out_avg_arr.append(np.mean(fly_out[100:]))   
     equil_arr.append(get_eq(fly_out))
 
-plt.figure()
-plt.scatter(params[:,0],fly_out_avg_arr)
-plt.title("Fly Out Avg = X_jar")
-plt.figure()
-plt.plot(params[:,1], equil_arr)
-plt.show()
+plot_all()
+
 """
 update()
 observe()"""
