@@ -2,7 +2,7 @@
 # The University of Michigan - Ann Arbor, April 3rd, 2022
 #
 # Joe Rottner (jrottner@umich.edu) and Jason Hu (jashu@umich.edu)
-# Runs on Python 3.9.7
+# Using Python 3.9.7
 
 import numpy as np
 import numpy.matlib as npm
