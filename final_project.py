@@ -18,10 +18,10 @@ x_jar = 10 # size of jar in X dimension
 y_jar = 10 # size of jar in Y dimension
 x_pad = 5 # size of padding in X dimension on each side of jar
 y_pad = 5 # size of padding in Y dimension on each side of jar
-num_injar = 3 #number of fireflies starting inside the jar
-num_outjar = 5 #number of fireflies starting outside the jar
+num_injar = 3 # number of fireflies starting inside the jar
+num_outjar = 5 # number of fireflies starting outside the jar
 randomness = 0.5 # how randomly the fireflies move according to luminosity
-simulate = True # If simulate is True, will run PyCX simulation. Otherwise will run analysis instead
+simulate = False # If simulate is True, will run PyCX simulation. Otherwise will run analysis instead
 
 """
 Data structure for grid - Array of Arrays
@@ -82,11 +82,13 @@ class Firefly():
             self.row = int(np.random.uniform(y_pad + 1,1 + y_pad + y_jar)) # select row position uniformly distributed between edges of jar, int function rounds down float returned from random draw 
             self.col = int(np.random.uniform(x_pad + 1,x_pad + x_jar + 1)) # select column position uniformly distributed between edges of jar, int function rounds down float returned from random draw
             
+            # Randomly chooses a row and column in the inside of the grid
             while self.checkFirefly(self.row,self.col):
                 self.row = int(np.random.uniform(y_pad + 1,1 + y_pad + y_jar))
                 self.col = int(np.random.uniform(x_pad + 1,x_pad + x_jar + 1))
 
-        else:
+        else: # if outside the jar...
+            # Randomly select a point out of the jar, and if there is not a firefly already there, spawn.
             self.loc = 1
             xpos = 0
             ypos = 0
@@ -147,7 +149,7 @@ class Firefly():
                 brightest = moves[x]
                 themove = x
 
-        # With some chance, the firefly chooses to move in any of the random legal directions
+        # With some chance, the firefly chooses to move in any of the random valid directions
         if np.random.uniform() < randomness:
             themove = random.choice(list(moves.keys()))
 
@@ -263,10 +265,15 @@ def observe():
 
     plt.subplot(2,1,1)
     plt.imshow(disp_grid)
+    plt.title("Firefly Movements in Stage")
     plt.subplot(2,1,2)
     plt.imshow(lum)
+    plt.title("Luminosity Heatmap vs Location")
     plt.show()
 
+# Returns roughly the first time it takes for the system to generally reach the equilibrium value
+# Input: array of outside fireflies indexed by timestep
+# Output: integer timestep of first time reaching determined equilibrium point
 def get_eq(arr): 
     N = len(arr)
     avg = np.mean(fly_out[int(N/2):])
@@ -275,9 +282,12 @@ def get_eq(arr):
             return i 
     return N-1
 
+# Plots the Average Outside Fireflies and Equilibrium Time vs all simulation parameters in Latin Hypercube sweep
 def plot_avg_plots():
     plt.cla()
     global params, fly_out_avg_arr, equil_arr
+    # uncomment for full parameter sweep
+    """
     plt.scatter(params[:,0],fly_out_avg_arr)
     plt.title("Average Outside Fireflies vs. x_jar")
     plt.ylabel("Avg Outside Fireflies")
@@ -318,6 +328,7 @@ def plot_avg_plots():
     plt.ylabel("Time to Reach Equilibrium")
     plt.xlabel("y_pad")
     plt.figure()
+    """
     plt.scatter(params[:,4],fly_out_avg_arr)
     plt.title("Average Outside Fireflies vs. randomness")
     plt.ylabel("Avg Outside Fireflies")
@@ -349,76 +360,91 @@ def plot_avg_plots():
     plt.xlabel("num_outjar")
     plt.show()
 
+# Plots the Average Outside Fireflies and Equilibrium Time vs all simulation parameters in Latin Hypercube sweep
 def plot_lum_plots():
     plt.cla()
     global params, peak_lum_arr
+    # uncomment for full parameter sweep
+    """
     plt.scatter(params[:,0],peak_lum_arr)
     plt.title("Peak Luminosity vs. x_jar")
-    plt.ylabel("Avg Outside Fireflies")
+    plt.ylabel("Peak Luminosity")
     plt.xlabel("x_jar")
     plt.figure()
     plt.scatter(params[:,1],peak_lum_arr)
     plt.title("Peak Luminosity vs. y_jar")
-    plt.ylabel("Avg Outside Fireflies")
+    plt.ylabel("Peak Luminosity")
     plt.xlabel("y_jar")
     plt.figure()
     plt.scatter(params[:,2],peak_lum_arr)
     plt.title("Peak Luminosity vs. x_pad")
-    plt.ylabel("Avg Outside Fireflies")
+    plt.ylabel("Peak Luminosity")
     plt.xlabel("x_pad")
     plt.figure()
     plt.scatter(params[:,3],peak_lum_arr)
     plt.title("Peak Luminosity vs. y_pad")
-    plt.ylabel("Avg Outside Fireflies")
+    plt.ylabel("Peak Luminosity")
     plt.xlabel("y_pad")
+    """
     plt.figure()
     plt.scatter(params[:,4],peak_lum_arr)
     plt.title("Peak Luminosity vs. randomness")
-    plt.ylabel("Avg Outside Fireflies")
+    plt.ylabel("Peak Luminosity")
     plt.xlabel("randomness")
     plt.figure()
     plt.scatter(params[:,5],peak_lum_arr)
     plt.title("Peak Luminosity vs. num_injar")
-    plt.ylabel("Avg Outside Fireflies")
+    plt.ylabel("Peak Luminosity")
     plt.xlabel("num_injar")
     plt.figure()
     plt.scatter(params[:,6],peak_lum_arr)
     plt.title("Peak Luminosity vs. num_outjar")
-    plt.ylabel("Avg Outside Fireflies")
+    plt.ylabel("Peak Luminosity")
     plt.xlabel("num_outjar")
     plt.show()
-if simulate == False:
-    nsamples = 200
+
+if simulate == False: # if we wish to analyze and not simulte via PyCX...
+    nsamples = 200 # number of samples
     reruns = 2
-    nparams = 7
+    nparams = 3
 
     # Set up parameter array
     params = npm.repmat(lhs(nparams, samples = nsamples),reruns,1) 
     # Each row is a new parameter set
 
+    # Concatenates the array of a 3 parameter sweep to match the output of a 7 parameter sweep so we don't have to change the code when omitting dimension based paramters
+    params = np.concatenate((np.zeros((np.shape(params)[0],4)),params),axis=1) # comment out if you would like to run full multiparameter sweep
     fly_out_avg_arr = []
     equil_arr = []
     peak_lum_arr = []
     N = 200
     i = -1
+
     while i < (np.shape(params)[0] - 1):
         i +=1
         print("Simulation: " + str(i + 1) + " / " + str(np.shape(params)[0]))
+        # uncomment below for full parameter sweep
+        """
         x_jar = int(max(params[i,0] * 10, 2))
         y_jar = int(max(params[i,1] * 10, 2))
         x_pad = int(max(params[i,2] * 10, 1))
         y_pad = int(max(params[i,3] * 10, 1))
+        """
         randomness = params[i,4]
         num_injar = int(params[i,5]*20)
         num_outjar = int(params[i,6]*30)
 
+        # uncomment below for full parameter sweep
+        """
         params[i,0] = x_jar
         params[i,1] = y_jar
         params[i,2] = x_pad
         params[i,3] = y_pad
+        """
         params[i,5] = num_injar
         params[i,6] = num_outjar
 
+        # Skip simulations where there is not enough space for the defined number of initial fireflies
         r,s = get_jarsize()
         if num_injar > r or num_outjar > s:
             print("Deleting row...")
@@ -433,6 +459,8 @@ if simulate == False:
         lum_grid = np.zeros((2 + y_pad + y_jar,2 + 2*x_pad + x_jar))
         lum_grid = compute_luminosity(lum_grid)
         fly_out = []
+        
+        # Compute the peak luminousity and outside fireflies for each timestep
         for j in range(N):
 
             temp = np.amax(lum_grid)
@@ -445,7 +473,8 @@ if simulate == False:
         equil_arr.append(get_eq(fly_out))
         peak_lum_arr.append(peak_lum)
 
-    #plot_avg_plots()
-    #plot_lum_plots()
-else:
+    # Plot all of the parameter scatter plots for Latin Hypercube sweep
+    plot_avg_plots()
+    plot_lum_plots()
+else: # if we would like to instead check out the PyCX Simulator...
     pycxsimulator.GUI().start(func=[initialize, observe, update])
