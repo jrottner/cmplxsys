@@ -2,6 +2,7 @@
 # The University of Michigan - Ann Arbor, April 3rd, 2022
 #
 # Joe Rottner (jrottner@umich.edu) and Jason Hu (jashu@umich.edu)
+# Runs on Python 3.9.7
 
 import numpy as np
 import numpy.matlib as npm
@@ -20,6 +21,7 @@ y_pad = 5 # size of padding in Y dimension on each side of jar
 num_injar = 3 #number of fireflies starting inside the jar
 num_outjar = 5 #number of fireflies starting outside the jar
 randomness = 0.5 # how randomly the fireflies move according to luminosity
+simulate = True # If simulate is True, will run PyCX simulation. Otherwise will run analysis instead
 
 """
 Data structure for grid - Array of Arrays
@@ -385,68 +387,65 @@ def plot_lum_plots():
     plt.ylabel("Avg Outside Fireflies")
     plt.xlabel("num_outjar")
     plt.show()
+if simulate == False:
+    nsamples = 200
+    reruns = 2
+    nparams = 7
 
-nsamples = 200
-reruns = 2
-nparams = 7
+    # Set up parameter array
+    params = npm.repmat(lhs(nparams, samples = nsamples),reruns,1) 
+    # Each row is a new parameter set
 
-# Set up parameter array
-params = npm.repmat(lhs(nparams, samples = nsamples),reruns,1) 
-# Each row is a new parameter set
+    fly_out_avg_arr = []
+    equil_arr = []
+    peak_lum_arr = []
+    N = 200
+    i = -1
+    while i < (np.shape(params)[0] - 1):
+        i +=1
+        print("Simulation: " + str(i + 1) + " / " + str(np.shape(params)[0]))
+        x_jar = int(max(params[i,0] * 10, 2))
+        y_jar = int(max(params[i,1] * 10, 2))
+        x_pad = int(max(params[i,2] * 10, 1))
+        y_pad = int(max(params[i,3] * 10, 1))
+        randomness = params[i,4]
+        num_injar = int(params[i,5]*20)
+        num_outjar = int(params[i,6]*30)
 
-fly_out_avg_arr = []
-equil_arr = []
-peak_lum_arr = []
-N = 200
-i = -1
-while i < (np.shape(params)[0] - 1):
-    i +=1
-    print("Simulation: " + str(i + 1) + " / " + str(np.shape(params)[0]))
-    x_jar = int(max(params[i,0] * 10, 2))
-    y_jar = int(max(params[i,1] * 10, 2))
-    x_pad = int(max(params[i,2] * 10, 1))
-    y_pad = int(max(params[i,3] * 10, 1))
-    randomness = params[i,4]
-    num_injar = int(params[i,5]*20)
-    num_outjar = int(params[i,6]*30)
-    
-    params[i,0] = x_jar
-    params[i,1] = y_jar
-    params[i,2] = x_pad
-    params[i,3] = y_pad
-    params[i,5] = num_injar
-    params[i,6] = num_outjar
-    
-    r,s = get_jarsize()
-    if num_injar > r or num_outjar > s:
-        print("Deleting row...")
-        params = np.delete(params, i, 0)
-        i -= 1
-        continue
+        params[i,0] = x_jar
+        params[i,1] = y_jar
+        params[i,2] = x_pad
+        params[i,3] = y_pad
+        params[i,5] = num_injar
+        params[i,6] = num_outjar
 
-    fly_out_avg_sum = 0
-    equil_sum = 0
-    peak_lum = 0
-    initialize()
-    lum_grid = np.zeros((2 + y_pad + y_jar,2 + 2*x_pad + x_jar))
-    lum_grid = compute_luminosity(lum_grid)
-    fly_out = []
-    for j in range(N):
-        
-        temp = np.amax(lum_grid)
-        if peak_lum < temp: peak_lum = temp
-        _,b = compute_in()
-        fly_out.append(b)
-        update()
-        
-    fly_out_avg_arr.append(np.mean(fly_out[100:]))   
-    equil_arr.append(get_eq(fly_out))
-    peak_lum_arr.append(peak_lum)
+        r,s = get_jarsize()
+        if num_injar > r or num_outjar > s:
+            print("Deleting row...")
+            params = np.delete(params, i, 0)
+            i -= 1
+            continue
 
-#plot_avg_plots()
-plot_lum_plots()
+        fly_out_avg_sum = 0
+        equil_sum = 0
+        peak_lum = 0
+        initialize()
+        lum_grid = np.zeros((2 + y_pad + y_jar,2 + 2*x_pad + x_jar))
+        lum_grid = compute_luminosity(lum_grid)
+        fly_out = []
+        for j in range(N):
 
-"""
-update()
-observe()"""
-#pycxsimulator.GUI().start(func=[initialize, observe, update])
+            temp = np.amax(lum_grid)
+            if peak_lum < temp: peak_lum = temp
+            _,b = compute_in()
+            fly_out.append(b)
+            update()
+
+        fly_out_avg_arr.append(np.mean(fly_out[100:]))   
+        equil_arr.append(get_eq(fly_out))
+        peak_lum_arr.append(peak_lum)
+
+    #plot_avg_plots()
+    #plot_lum_plots()
+else:
+    pycxsimulator.GUI().start(func=[initialize, observe, update])
